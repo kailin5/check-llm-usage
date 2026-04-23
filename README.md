@@ -31,3 +31,4 @@ You can override them with environment variables:
 - `CLAUDE_USAGE_CMD`
 - `GEMINI_USAGE_CMD`
 - `COPILOT_USAGE_CMD`
+- `LLM_USAGE_TIMEOUT_MS` (defaults to `30000`)

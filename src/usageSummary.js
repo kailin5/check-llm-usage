@@ -1,3 +1,5 @@
+const COMMAND_NOT_FOUND_PATTERN = /not found|is not recognized as an internal or external command/i;
+
 function parseInteger(value) {
   if (!value) {
     return null;
@@ -48,13 +50,15 @@ function summarizeProviderResult(provider, command, result) {
   const stderr = result.stderr || '';
   const stdout = result.stdout || '';
   const combinedText = [stdout, stderr].filter(Boolean).join('\n');
-  const commandMissing = /not found|is not recognized as an internal or external command/i.test(combinedText);
-
-  const status = (error && error.code === 'ENOENT') || (error && error.code === 127) || commandMissing
-    ? 'not_installed'
-    : error
-      ? 'failed'
-      : 'ok';
+  const commandMissing = COMMAND_NOT_FOUND_PATTERN.test(combinedText);
+  const exitCode = error?.code;
+  const normalizedExitCode = exitCode === undefined || exitCode === null ? '' : String(exitCode).toLowerCase();
+  let status = 'ok';
+  if (normalizedExitCode === 'enoent' || normalizedExitCode === '127' || commandMissing) {
+    status = 'not_installed';
+  } else if (error) {
+    status = 'failed';
+  }
 
   return {
     provider,

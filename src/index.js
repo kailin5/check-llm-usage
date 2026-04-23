@@ -3,6 +3,7 @@ const { promisify } = require('node:util');
 const { summarizeProviderResult } = require('./usageSummary');
 
 const execAsync = promisify(exec);
+const commandTimeoutMs = Number.parseInt(process.env.LLM_USAGE_TIMEOUT_MS || '', 10) || 30_000;
 
 const PROVIDERS = [
   {
@@ -22,7 +23,7 @@ const PROVIDERS = [
 async function runProvider(provider) {
   try {
     const output = await execAsync(provider.command, {
-      timeout: 30_000,
+      timeout: commandTimeoutMs,
       maxBuffer: 1024 * 1024,
     });
 
@@ -65,11 +66,7 @@ function printSummary(results) {
 }
 
 async function main() {
-  const results = [];
-
-  for (const provider of PROVIDERS) {
-    results.push(await runProvider(provider));
-  }
+  const results = await Promise.all(PROVIDERS.map(runProvider));
 
   if (process.argv.includes('--json')) {
     console.log(JSON.stringify({ generatedAt: new Date().toISOString(), results }, null, 2));
