@@ -56,3 +56,14 @@ test('summarizeProviderResult keeps successful status and parses merged output m
   assert.equal(summary.metrics.totalTokens, 120);
   assert.equal(summary.metrics.estimatedCostUsd, 0.01);
 });
+
+test('summarizeProviderResult returns no_data when exec succeeds but parses nothing', () => {
+  const summary = summarizeProviderResult('gemini', 'gemini usage', {
+    stdout: 'Gemini CLI — Defaults to interactive mode.',
+    stderr: '',
+  });
+
+  assert.equal(summary.status, 'no_data');
+  assert.equal(summary.metrics.inputTokens, null);
+  assert.equal(summary.metrics.estimatedCostUsd, null);
+});

@@ -3,11 +3,26 @@ const { exec } = require('node:child_process');
 const { promisify } = require('node:util');
 const { summarizeProviderResult } = require('./usageSummary');
 const { getProviders } = require('./providers');
+const { summarizeClaudeUsage } = require('./claudeUsage');
 
 const execAsync = promisify(exec);
 const commandTimeoutMs = Number.parseInt(process.env.LLM_USAGE_TIMEOUT_MS || '', 10) || 30_000;
 
 async function runProvider(provider) {
+  if (provider.builtin && provider.name === 'claude') {
+    try {
+      return summarizeClaudeUsage();
+    } catch (error) {
+      return {
+        provider: 'claude',
+        command: provider.command,
+        status: 'failed',
+        metrics: { inputTokens: null, outputTokens: null, totalTokens: null, estimatedCostUsd: null },
+        output: String(error?.message || error),
+      };
+    }
+  }
+
   try {
     const output = await execAsync(provider.command, {
       timeout: commandTimeoutMs,

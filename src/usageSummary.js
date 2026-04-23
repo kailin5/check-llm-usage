@@ -45,6 +45,15 @@ function parseUsageMetrics(text) {
   };
 }
 
+function hasAnyMetric(metrics) {
+  return (
+    metrics.inputTokens !== null ||
+    metrics.outputTokens !== null ||
+    metrics.totalTokens !== null ||
+    metrics.estimatedCostUsd !== null
+  );
+}
+
 function summarizeProviderResult(provider, command, result) {
   const error = result.error;
   const stderr = result.stderr || '';
@@ -53,18 +62,26 @@ function summarizeProviderResult(provider, command, result) {
   const commandMissing = COMMAND_NOT_FOUND_PATTERN.test(combinedText);
   const exitCode = error?.code;
   const normalizedExitCode = exitCode === undefined || exitCode === null ? '' : String(exitCode).toLowerCase();
-  let status = 'ok';
+  const metrics = parseUsageMetrics(combinedText);
+  let status;
   if (normalizedExitCode === 'enoent' || normalizedExitCode === '127' || commandMissing) {
     status = 'not_installed';
   } else if (error) {
     status = 'failed';
+  } else if (!hasAnyMetric(metrics)) {
+    // Command exited 0 but we couldn't parse any tokens or cost — most likely
+    // the default *_USAGE_CMD isn't a real usage command (many provider CLIs
+    // don't expose one). Flag rather than silently reporting "ok".
+    status = 'no_data';
+  } else {
+    status = 'ok';
   }
 
   return {
     provider,
     command,
     status,
-    metrics: parseUsageMetrics(combinedText),
+    metrics,
     output: combinedText.trim(),
   };
 }

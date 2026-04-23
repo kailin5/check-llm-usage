@@ -1,8 +1,16 @@
+// TODO: the default commands for gemini/copilot/openai/groq/perplexity below
+// are placeholders — none of those CLIs actually expose a `usage` subcommand
+// today. Users can override via the *_USAGE_CMD env vars, but out-of-the-box
+// these will report `not_installed` or `no_data`. Real implementations (e.g.
+// API-based polling or log parsing per provider) are tracked separately.
 function getProviders(env = process.env) {
   return [
     {
       name: 'claude',
+      // Handled specially in src/index.js by reading ~/.claude/projects/*.jsonl.
+      // Setting CLAUDE_USAGE_CMD forces the exec path instead.
       command: env.CLAUDE_USAGE_CMD || 'claude usage',
+      builtin: !env.CLAUDE_USAGE_CMD,
     },
     {
       name: 'gemini',

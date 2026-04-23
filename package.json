@@ -1,10 +1,10 @@
 {
-  "name": "llm-usage-summary",
+  "name": "check-llm-usage",
   "version": "1.0.0",
-  "description": "Check multi-provider LLM usage from Node.js and print a summary",
+  "description": "CLI that summarizes multi-provider LLM usage (Claude, Gemini, Copilot, OpenAI, Groq, Perplexity) with tokens and estimated cost",
   "main": "src/index.js",
   "bin": {
-    "llm-usage-summary": "src/index.js"
+    "check-llm-usage": "src/index.js"
   },
   "scripts": {
     "start": "node src/index.js",
@@ -13,5 +13,31 @@
   "engines": {
     "node": ">=18"
   },
+  "files": [
+    "src",
+    "LICENSE",
+    "README.md"
+  ],
+  "keywords": [
+    "llm",
+    "usage",
+    "claude",
+    "gemini",
+    "copilot",
+    "openai",
+    "groq",
+    "perplexity",
+    "tokens",
+    "cost",
+    "cli"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kailin5/check-llm-usage.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kailin5/check-llm-usage/issues"
+  },
+  "homepage": "https://github.com/kailin5/check-llm-usage#readme",
   "license": "MIT"
 }
