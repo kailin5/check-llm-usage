@@ -1,4 +1,4 @@
-# check-llm-usage
+# llm-usage-summary
 
 Node.js CLI (publishable as `llm-usage-summary`) to check LLM usage for:
 - Claude
