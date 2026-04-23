@@ -1,24 +1,11 @@
+#!/usr/bin/env node
 const { exec } = require('node:child_process');
 const { promisify } = require('node:util');
 const { summarizeProviderResult } = require('./usageSummary');
+const { getProviders } = require('./providers');
 
 const execAsync = promisify(exec);
 const commandTimeoutMs = Number.parseInt(process.env.LLM_USAGE_TIMEOUT_MS || '', 10) || 30_000;
-
-const PROVIDERS = [
-  {
-    name: 'claude',
-    command: process.env.CLAUDE_USAGE_CMD || 'claude usage',
-  },
-  {
-    name: 'gemini',
-    command: process.env.GEMINI_USAGE_CMD || 'gemini usage',
-  },
-  {
-    name: 'copilot',
-    command: process.env.COPILOT_USAGE_CMD || 'gh copilot usage',
-  },
-];
 
 async function runProvider(provider) {
   try {
@@ -66,7 +53,8 @@ function printSummary(results) {
 }
 
 async function main() {
-  const results = await Promise.all(PROVIDERS.map(runProvider));
+  const providers = getProviders();
+  const results = await Promise.all(providers.map(runProvider));
 
   if (process.argv.includes('--json')) {
     console.log(JSON.stringify({ generatedAt: new Date().toISOString(), results }, null, 2));

@@ -1,8 +1,11 @@
 {
-  "name": "check-llm-usage",
+  "name": "llm-usage-summary",
   "version": "1.0.0",
-  "description": "Check Claude, Gemini, and Copilot usage from Node.js and print a summary",
+  "description": "Check multi-provider LLM usage from Node.js and print a summary",
   "main": "src/index.js",
+  "bin": {
+    "llm-usage-summary": "src/index.js"
+  },
   "scripts": {
     "start": "node src/index.js",
     "test": "node --test"
