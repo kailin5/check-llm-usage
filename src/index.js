@@ -20,7 +20,7 @@ async function runProvider(provider) {
 
   if (provider.builtin && provider.name === 'gemini') {
     try {
-      return await summarizeGeminiUsage();
+      return await summarizeGeminiUsage({ command: provider.command });
     } catch (error) {
       return builtinError('gemini', provider.command, error);
     }
@@ -101,10 +101,31 @@ function printClaudeBlock(result) {
 }
 
 function printGeminiBlock(result) {
-  // Mirrors Gemini CLI's `/model` slash command: just the currently selected
-  // model. The CLI doesn't persist token usage on disk.
+  const m = result.metrics || {};
+  const limits = m.limits || {};
+
   console.log('- gemini: ok');
-  console.log(`  current_model: ${result.metrics.model}`);
+  if (m.latestModel) console.log(`  current_model: ${m.latestModel}`);
+
+  const pctStr = (pct) => (pct == null ? null : `${pct}% used`);
+  const bucketLine = (pct, used, limit) => {
+    const usedStr = formatMoney(used);
+    if (limit) return `${pctStr(pct)} (${usedStr} of ~$${limit.toFixed(2)})`;
+    return `${usedStr} used`;
+  };
+
+  console.log('');
+  console.log('  Daily limit (rolling 24h)');
+  if (m.dailyResetsIn) console.log(`    Rolling-window end in ${m.dailyResetsIn}`);
+  console.log(`    ${bucketLine(m.dailyPct, m.cost24h, limits.daily)}`);
+
+  console.log('');
+  console.log(`  Lifetime cost: ${formatMoney(m.estimatedCostUsd)}`);
+  if (!limits.daily) {
+    console.log('');
+    console.log('  (Set GEMINI_PLAN=advanced or GEMINI_DAILY_LIMIT_USD');
+    console.log('   to see "% used" against your plan.)');
+  }
 }
 
 function printGenericBlock(result) {
@@ -128,8 +149,8 @@ function printSummary(results) {
   const notDetected = [];
 
   for (const result of results) {
-    // Gemini with no configured model → lump into the not-detected line.
-    const isEmptyGemini = result.provider === 'gemini' && !result.metrics?.model;
+    // Gemini with no model → lump into the not-detected line.
+    const isEmptyGemini = result.provider === 'gemini' && !result.metrics?.latestModel;
 
     if (NOT_DETECTED_STATUSES.has(result.status) || isEmptyGemini) {
       notDetected.push(result.provider);

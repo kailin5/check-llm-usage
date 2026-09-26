@@ -14,9 +14,8 @@ function getProviders(env = process.env) {
     },
     {
       name: 'gemini',
-      // Handled specially in src/index.js by reading ~/.gemini/settings.json
-      // to surface the current model (mirrors the `/model` slash command).
-      // Setting GEMINI_USAGE_CMD forces the exec path instead.
+      // Handled specially in src/index.js by reading ~/.gemini/tmp/*
+      // Setting GEMINI_USAGE_CMD forces the generic exec path instead.
       command: env.GEMINI_USAGE_CMD || 'gemini usage',
       builtin: !env.GEMINI_USAGE_CMD,
     },
